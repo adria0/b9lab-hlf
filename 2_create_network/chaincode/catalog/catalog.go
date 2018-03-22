@@ -6,25 +6,44 @@ import (
 	"fmt"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/hyperledger/fabric/core/chaincode/shim" // import for Chaincode Interface
+	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/protos/msp"
-	pb "github.com/hyperledger/fabric/protos/peer" // import for peer response
+	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
 // Defined to implement chaincode interface
 type Catalog struct {
+	handlers map[string]commandHandler
 }
 
-// Define our struct to store PCs in Blockchain, start fields upper case for JSON
+// Define our struct to store items in the catalog
 type Item struct {
-	ID          string // This one will be our key
-	Owner       string
-	Description string
-	HiResIPFS   string // this will contain its status on the exchange
+	ID          string // The ID of the item
+	Owner       string // The owner of the item
+	Description string // Desription
+	HiResIPFS   string // An IPFS link to a high resolution image of asset
+}
+
+// Define commandHandler
+type commandHandler func(shim.ChaincodeStubInterface, []string) pb.Response
+
+func NewCatalog() *Catalog {
+
+	c := &Catalog{}
+	c.handlers = map[string]commandHandler{
+		"register": c.register,
+		"transfer": c.transfer,
+		"list":     c.list,
+		"query":    c.query,
+		"whoami":   c.whoami,
+	}
+
+	return c
 }
 
 // Implement Init
 func (c *Catalog) Init(stub shim.ChaincodeStubInterface) pb.Response {
+
 	return shim.Success(nil)
 }
 
@@ -33,19 +52,17 @@ func (c *Catalog) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 
 	function, args := stub.GetFunctionAndParameters() // get function name and args
 
-	switch function {
-	case "register":
-		// A computer is produced and available
-		return c.register(stub, args)
-	case "transfer":
-		// A market bought a computer
-		return c.transfer(stub, args)
-	case "list":
-		// A market bought a computer
-		return c.list(stub, args)
-	default:
-		return shim.Error("Available functions: register, transfer, list")
+	if handler, ok := c.handlers[function]; ok {
+		return handler(stub, args)
 	}
+
+	availableFunctions := ""
+	for function = range c.handlers {
+		availableFunctions += " " + function
+	}
+
+	return shim.Error("Available functions: " + availableFunctions)
+
 }
 
 // createPC puts an available PC in the Blockchain
@@ -162,23 +179,60 @@ func (c *Catalog) list(stub shim.ChaincodeStubInterface, args []string) pb.Respo
 	}
 	defer resultsIterator.Close()
 
-	keys := " \n"
+	keys := []string{}
 	// This interface includes HasNext,Close and Next
 	for resultsIterator.HasNext() {
 		queryResponse, err := resultsIterator.Next()
 		if err != nil {
 			return shim.Error(err.Error())
 		}
-		keys += queryResponse.Key + " \n"
+		keys = append(keys, queryResponse.Key)
 	}
 
 	fmt.Println(keys)
 
-	return shim.Success([]byte(keys))
+	return shim.Success([]byte(fmt.Sprintf("%v", keys))) // response info
+}
+
+// queryDetail gives all fields of stored data and want to have the serial number
+func (c *Catalog) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+
+	if len(args) != 1 {
+		return shim.Error("This function needs the ID, newOwner as argument")
+	}
+
+	id := args[0]
+
+	value, err := stub.GetState(id)
+	if err != nil {
+		return shim.Error("ID" + id + " not found")
+	}
+
+	var item Item
+	err = json.Unmarshal(value, &item)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	return shim.Success([]byte(fmt.Sprintf("%v", item))) // response info
+}
+
+// whoami retrieves the current identity on the blockchain
+func (c *Catalog) whoami(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+
+	if len(args) != 0 {
+		return shim.Error("This does not accepts arguments")
+	}
+
+	creatorID, err := c.getCreatorID(stub)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success([]byte(creatorID))
 }
 
 func main() {
-	err := shim.Start(new(Catalog))
+	err := shim.Start(NewCatalog())
 	if err != nil {
 		fmt.Printf("Error starting chaincode sample: %s", err)
 	}
