@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -77,7 +78,8 @@ func (c *Catalog) getCreatorID(stub shim.ChaincodeStubInterface) (string, error)
 	if err != nil {
 		return "", err
 	}
-	return hex.EncodeToString(id.IdBytes), nil
+	idhash := sha256.Sum256(id.IdBytes)
+	return hex.EncodeToString(idhash[:]), nil
 }
 
 // createPC puts an available PC in the Blockchain
