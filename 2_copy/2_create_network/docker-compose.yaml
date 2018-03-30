@@ -1,0 +1,237 @@
+version: '2'
+
+networks:
+  artstamper:
+
+services:
+
+  # orderer service --------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------------------------------------------------
+
+  orderer.artstamper.com:
+    image: hyperledger/fabric-orderer:x86_64-1.0.0
+    container_name: orderer.artstamper.com
+    environment:
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      # enabled TLS
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+    volumes:    
+      - ./orderer/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+      - ./crypto-config/ordererOrganizations/artstamper.com/orderers/orderer.artstamper.com/msp:/var/hyperledger/orderer/msp
+      - ./crypto-config/ordererOrganizations/artstamper.com/orderers/orderer.artstamper.com/tls:/var/hyperledger/orderer/tls
+    command: orderer
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    ports:
+      - 7050:7050
+    networks:
+      - artstamper
+
+  # organization 1, peers & client -----------------------------------------------------------------------------
+  # ------------------------------------------------------------------------------------------------------------
+
+  peer0.org1.com:
+    container_name: peer0.org1.com
+    extends:
+      file: ./peer.yaml
+      service: peer
+    environment:
+      - CORE_PEER_ID=peer0.org1.com
+      - CORE_PEER_ADDRESS=peer0.org1.com:7051
+      - CORE_PEER_LOCALMSPID=Org1
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.com:17051
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=db.peer0.org1.com:5984
+      # enabled TLS
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_CHAINCODELISTENADDRESS=peer0.org1.com:7052
+      
+    volumes:
+      - ./crypto-config/peerOrganizations/org1.com/peers/peer0.org1.com/msp:/etc/hyperledger/msp/peer
+      - ./crypto-config/peerOrganizations/org1.com/peers/peer0.org1.com/tls:/etc/hyperledger/fabric/tls
+
+    ports:
+      - 17051:7051
+      - 17053:7053
+
+    depends_on:
+      - orderer.artstamper.com
+      - db.peer0.org1.com
+
+    networks:
+      - artstamper
+
+  db.peer0.org1.com:
+    container_name: db.peer0.org1.com
+    image: hyperledger/fabric-couchdb:x86_64-1.0.0
+    environment:
+      DB_URL: http://localhost:5984/
+    ports:
+      - "5984:5984"
+    networks:
+      - artstamper
+ 
+  peer1.org1.com:
+    container_name: peer1.org1.com
+    extends:
+      file: ./peer.yaml
+      service: peer
+    environment:
+      - CORE_PEER_ID=peer1.org1.com
+      - CORE_PEER_ADDRESS=peer1.org1.com:7051
+      - CORE_PEER_LOCALMSPID=Org1
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org1.com:7051
+      # enabled TLS
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_CHAINCODELISTENADDRESS=peer1.org1.com:7052
+
+    volumes:
+      - ./crypto-config/peerOrganizations/org1.com/peers/peer1.org1.com/msp:/etc/hyperledger/msp/peer
+      - ./crypto-config/peerOrganizations/org1.com/peers/peer1.org1.com/tls:/etc/hyperledger/fabric/tls
+
+    ports:
+      - 27051:7051
+      - 27053:7053
+    depends_on:
+      - orderer.artstamper.com
+    networks:
+      - artstamper
+
+  cli.org1.com:
+    extends:
+      file: ./cli.yaml
+      service: cli
+    container_name: cli.org1.com
+    environment:
+      - CORE_PEER_ID=cli.org1.com
+      - CORE_PEER_ADDRESS=peer0.org1.com:7051
+      - CORE_PEER_LOCALMSPID=Org1
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.com/msp
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/peers/peer0.org1.com/msp/cacerts/ca.org1.com-cert.pem
+      - CORE_PEER_CHAINCODELISTENADDRESS=peer0.org1.com:7052
+    volumes:
+      - ./crypto-config/peerOrganizations/org1.com:/etc/hyperledger/msp
+      - ./crypto-config/ordererOrganizations/artstamper.com/orderers:/etc/hyperledger/orderers
+    depends_on:
+      - orderer.artstamper.com
+      - peer0.org1.com
+      - peer1.org1.com
+    networks:
+      - artstamper
+
+  # organization 2, peers & client -----------------------------------------------------------------------------
+  # ------------------------------------------------------------------------------------------------------------
+
+  peer0.org2.com:
+    container_name: peer0.org2.com
+    extends:
+      file: ./peer.yaml
+      service: peer
+    environment:
+      - CORE_PEER_ID=peer0.org2.com
+      - CORE_PEER_ADDRESS=peer0.org2.com:7051
+      - CORE_PEER_LOCALMSPID=Org2
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org2.com:7051
+      # enabled TLS
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_CHAINCODELISTENADDRESS=peer0.org2.com:7052
+      
+    volumes:
+      - ./crypto-config/peerOrganizations/org2.com/peers/peer0.org2.com/msp:/etc/hyperledger/msp/peer
+      - ./crypto-config/peerOrganizations/org2.com/peers/peer0.org2.com/tls:/etc/hyperledger/fabric/tls
+    ports:
+      - 37051:7051
+      - 37053:7053
+    depends_on:
+      - orderer.artstamper.com
+    networks:
+      - artstamper
+
+  peer1.org2.com:
+    container_name: peer1.org2.com
+    extends:
+      file: ./peer.yaml
+      service: peer
+    environment:
+      - CORE_PEER_ID=peer1.org2.com
+      - CORE_PEER_ADDRESS=peer1.org2.com:7051
+      - CORE_PEER_LOCALMSPID=Org2
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org2.com:7051
+      # enabled TLS
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_CHAINCODELISTENADDRESS=peer1.org2.com:7052
+      
+    volumes:
+      - ./crypto-config/peerOrganizations/org2.com/peers/peer1.org2.com/msp:/etc/hyperledger/msp/peer
+      - ./crypto-config/peerOrganizations/org2.com/peers/peer1.org2.com/tls:/etc/hyperledger/fabric/tls
+    ports:
+      - 47051:7051
+      - 47053:7053
+    depends_on:
+      - orderer.artstamper.com
+    networks:
+      - artstamper
+
+  cli.org2.com:
+    extends:
+      file: ./cli.yaml
+      service: cli
+    container_name: cli.org2.com
+    environment:
+      - CORE_PEER_ID=cli.org2.com
+      - CORE_PEER_ADDRESS=peer0.org2.com:7051
+      - CORE_PEER_LOCALMSPID=Org2
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org2.com/msp
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/peers/peer0.org2.com/msp/cacerts/ca.org2.com-cert.pem
+    volumes:
+      - ./crypto-config/peerOrganizations/org2.com:/etc/hyperledger/msp
+      - ./crypto-config/ordererOrganizations/artstamper.com/orderers:/etc/hyperledger/orderers
+    depends_on:
+      - orderer.artstamper.com
+      - peer0.org2.com
+      - peer1.org2.com
+    networks:
+      - artstamper
+
+  # fabric ca & client -----------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------------------------------------------------
+
+  fabriccaserver:
+     image: hyperledger/fabric-ca
+     container_name: fabriccaserver
+     ports:
+       - 7054:7054
+     environment:
+       - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+     volumes:
+       - ./fabric-ca-server:/etc/hyperledger/fabric-ca-server
+     command: sh -c 'fabric-ca-server start -b admin:adminpw'
+     networks:
+      - artstamper
+
+  admin-client:
+     tty: true
+     image: hyperledger/fabric-ca
+     container_name: admin-client
+     environment:
+       - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-client
+       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+     volumes:
+       - ./fabric-ca-client:/etc/hyperledger/fabric-ca-client
+     depends_on:
+       - fabriccaserver
+     command: sh -c 'sleep 5;fabric-ca-client enroll -u http://admin:adminpw@fabriccaserver:7054;sleep 10000'
+     networks:
+      - artstamper
