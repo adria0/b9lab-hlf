@@ -8,8 +8,6 @@ services:
       - GOPATH=/opt/gopath
     working_dir: /opt/peer
     volumes:
-#      - ./orderer/:/opt/gopath/src/github.com/hyperledger/fabric/peer/orderer
-#      - ./channels/:/opt/gopath/src/github.com/hyperledger/fabric/peer/channels
       - ./orderer/:/opt/peer/orderer
       - ./channels/:/opt/peer/channels
       - ./chaincode:/opt/gopath/src/
