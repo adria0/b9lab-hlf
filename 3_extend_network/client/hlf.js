@@ -2,15 +2,6 @@ const hfc = require('fabric-client');
 
 const client = new hfc();
 
-const responseInspect = function(results) {
-    const proposalResponses = results[0];
-    const proposal = results[1];
-    const header = results[2];
-  
-    return false;
-  };
-  
-  
 async function init(options) {
   
     const wallet = await hfc.newDefaultKeyValueStore({ path: options.wallet_path })
