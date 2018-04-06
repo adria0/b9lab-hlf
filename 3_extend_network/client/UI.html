@@ -1,0 +1,26 @@
+<html>
+<body>
+  <form enctype="application/json" action="register" method="POST">
+    <input name="args" value="ID">
+    <input name="args" value="Description">
+    <input name="args" value="HiResIPFS">
+    <button type="submit" name="action">Register</button>
+  </form>
+  <form enctype="application/json" action="transfer" method="POST">
+    <input name="args" value="ID">
+    <input name="args" value="NewOwner">
+    <button type="submit" name="action">Transfer</button>
+  </form>
+  <form enctype="application/json" action="list" method="GET">
+    <button type="submit" name="action">List</button>
+  </form>
+  <form enctype="application/json" action="query" method="GET">
+    <input name="args" value="ID">
+    <button type="submit" name="action">Query</button>
+  </form>
+  <form enctype="application/json" action="whoami" method="GET">
+    <button type="submit" name="action">WhoAMI</button>
+  </form>
+
+</body>
+</html>
