@@ -45,9 +45,6 @@ func NewCatalog() *Catalog {
 
 // Initialization, not too much to do!
 func (c *Catalog) Init(stub shim.ChaincodeStubInterface) pb.Response {
-
-	fmt.Println("****** CHAINCODE INIT *******")
-
 	return shim.Success(nil)
 }
 
@@ -111,6 +108,12 @@ func (c *Catalog) register(stub shim.ChaincodeStubInterface, args []string) pb.R
 	itemAsBytes, err := json.Marshal(item)
 	if err != nil {
 		return shim.Error(err.Error())
+	}
+
+	// Look for the ID
+	_, err = stub.GetState(id)
+	if err != nil {
+		return shim.Error("Serialnumber " + id + " already exists ")
 	}
 
 	err = stub.PutState(item.ID, itemAsBytes)
@@ -191,10 +194,8 @@ func (c *Catalog) list(stub shim.ChaincodeStubInterface, args []string) pb.Respo
 		}
 		keys = append(keys, queryResponse.Key)
 	}
-
-	fmt.Println(keys)
-
-	return shim.Success([]byte(fmt.Sprintf("%v", keys))) // response info
+	res, _ := json.Marshal(keys)
+	return shim.Success(res) // response info
 }
 
 // Query information about an item in the catalog
@@ -211,13 +212,7 @@ func (c *Catalog) query(stub shim.ChaincodeStubInterface, args []string) pb.Resp
 		return shim.Error("ID" + id + " not found")
 	}
 
-	var item Item
-	err = json.Unmarshal(value, &item)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	return shim.Success([]byte(fmt.Sprintf("%v", item))) // response info
+	return shim.Success(value) // response info
 }
 
 // whoami retrieves the current identity of the caller
@@ -231,15 +226,15 @@ func (c *Catalog) whoami(stub shim.ChaincodeStubInterface, args []string) pb.Res
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	return shim.Success([]byte(creatorID))
+
+	res, _ := json.Marshal(creatorID)
+	return shim.Success(res) // response info
 }
 
 // serve
 func main() {
-	fmt.Println("****** STARTING CHAINCODE *******")
 	err := shim.Start(NewCatalog())
 	if err != nil {
 		fmt.Printf("Error starting chaincode sample: %s", err)
 	}
-	fmt.Println("****** ENDING CHAINCODE *******")
 }

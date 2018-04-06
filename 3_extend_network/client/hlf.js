@@ -80,12 +80,6 @@ exports.query = async function (options, func, args) {
   }
 
   const responses = await channel.queryByChaincode(request);
-
-  let result = []
-  for(let i = 0; i < responses.length; i++) {
-    result.push( responses[i].toString('utf8') );
-  }
-  
-  return JSON.stringify({ result });
+  return responses[0].toString('utf8')
 
 }

@@ -65,8 +65,6 @@ app.get('/list', async function(req, res, next) {
 });
 
 app.get('/query', async function(req, res, next) {
-  console.log("ARGS is ",req.query)
-
   try {
     res.send(await hlf.query(clientOptions,"query",[req.query.args]))
   } catch (err) {
