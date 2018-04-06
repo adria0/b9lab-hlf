@@ -1,6 +1,6 @@
 echo ==== REGISTERING ====
 
-TLSCFG="--tls --cafile /etc/hyperledger/orderers/orderer.artstamper.com/msp/cacerts/ca.artstamper.com-cert.pem"
+TLSCFG=""
 CFG="-C testchannel -n catalog -v 0 $TLSCFG"
 
 # Define two pieces of art to register
@@ -16,7 +16,7 @@ echo ==== LIST ====
 LIST=$(docker exec cli.org2.com bash -c "peer chaincode query $CFG -c '{\"Args\":[\"list\"]}'" 2> /dev/null | cut -d ' ' -f 3-)
 
 # Wait to mine
-sleep 10
+sleep 2
 
 echo Collection is $LIST
 
@@ -34,7 +34,7 @@ echo ==== TRASFER ARTID1 FROM CLI1 TO CLI2 ====
 docker exec cli.org1.com bash -c "peer chaincode invoke $CFG -c '{\"Args\":[\"transfer\",\"$ARTID1\",\"$CLIORG2ID\"]}' $TLSCFG"
 
 # Wait to mine
-sleep 10
+sleep 2
 
 echo ==== ARTID1 NOW IS ====
 

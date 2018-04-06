@@ -17,15 +17,9 @@ services:
       - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
       - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
       - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
-      # enabled TLS
-      - ORDERER_GENERAL_TLS_ENABLED=true
-      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
-      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
-      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
     volumes:    
       - ./orderer/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
       - ./crypto-config/ordererOrganizations/artstamper.com/orderers/orderer.artstamper.com/msp:/var/hyperledger/orderer/msp
-      - ./crypto-config/ordererOrganizations/artstamper.com/orderers/orderer.artstamper.com/tls:/var/hyperledger/orderer/tls
     command: orderer
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric
     ports:
@@ -47,15 +41,10 @@ services:
       - CORE_PEER_LOCALMSPID=Org1
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.com:17051
-      # - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      # - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=db.peer0.org1.com:5984
-      # enabled TLS
-      - CORE_LOGGING_LEVEL=DEBUG
-      - CORE_PEER_TLS_ENABLED=true
-      - CORE_PEER_CHAINCODELISTENADDRESS=peer0.org1.com:7052
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=db.peer0.org1.com:5984
     volumes:
       - ./crypto-config/peerOrganizations/org1.com/peers/peer0.org1.com/msp:/etc/hyperledger/msp/peer
-      - ./crypto-config/peerOrganizations/org1.com/peers/peer0.org1.com/tls:/etc/hyperledger/fabric/tls
 
     ports:
       - 17051:7051
@@ -89,13 +78,9 @@ services:
       - CORE_PEER_LOCALMSPID=Org1
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org1.com:7051
-      # enabled TLS
-      - CORE_PEER_TLS_ENABLED=true
-      - CORE_PEER_CHAINCODELISTENADDRESS=peer1.org1.com:7052
 
     volumes:
       - ./crypto-config/peerOrganizations/org1.com/peers/peer1.org1.com/msp:/etc/hyperledger/msp/peer
-      - ./crypto-config/peerOrganizations/org1.com/peers/peer1.org1.com/tls:/etc/hyperledger/fabric/tls
 
     ports:
       - 27051:7051
@@ -115,12 +100,8 @@ services:
       - CORE_PEER_ADDRESS=peer0.org1.com:7051
       - CORE_PEER_LOCALMSPID=Org1
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.com/msp
-      - CORE_PEER_TLS_ENABLED=true
-      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/peers/peer0.org1.com/msp/cacerts/ca.org1.com-cert.pem
-      - CORE_PEER_CHAINCODELISTENADDRESS=peer0.org1.com:7052
     volumes:
       - ./crypto-config/peerOrganizations/org1.com:/etc/hyperledger/msp
-      - ./crypto-config/ordererOrganizations/artstamper.com/orderers:/etc/hyperledger/orderers
     depends_on:
       - orderer.artstamper.com
       - peer0.org1.com
@@ -142,13 +123,9 @@ services:
       - CORE_PEER_LOCALMSPID=Org2
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org2.com:7051
-      # enabled TLS
-      - CORE_PEER_TLS_ENABLED=true
-      - CORE_PEER_CHAINCODELISTENADDRESS=peer0.org2.com:7052
       
     volumes:
       - ./crypto-config/peerOrganizations/org2.com/peers/peer0.org2.com/msp:/etc/hyperledger/msp/peer
-      - ./crypto-config/peerOrganizations/org2.com/peers/peer0.org2.com/tls:/etc/hyperledger/fabric/tls
     ports:
       - 37051:7051
       - 37053:7053
@@ -168,13 +145,9 @@ services:
       - CORE_PEER_LOCALMSPID=Org2
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org2.com:7051
-      # enabled TLS
-      - CORE_PEER_TLS_ENABLED=true
-      - CORE_PEER_CHAINCODELISTENADDRESS=peer1.org2.com:7052
       
     volumes:
       - ./crypto-config/peerOrganizations/org2.com/peers/peer1.org2.com/msp:/etc/hyperledger/msp/peer
-      - ./crypto-config/peerOrganizations/org2.com/peers/peer1.org2.com/tls:/etc/hyperledger/fabric/tls
     ports:
       - 47051:7051
       - 47053:7053
@@ -193,14 +166,12 @@ services:
       - CORE_PEER_ADDRESS=peer0.org2.com:7051
       - CORE_PEER_LOCALMSPID=Org2
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org2.com/msp
-      - CORE_PEER_TLS_ENABLED=true
-      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/peers/peer0.org2.com/msp/cacerts/ca.org2.com-cert.pem
     volumes:
       - ./crypto-config/peerOrganizations/org2.com:/etc/hyperledger/msp
-      - ./crypto-config/ordererOrganizations/artstamper.com/orderers:/etc/hyperledger/orderers
     depends_on:
       - orderer.artstamper.com
       - peer0.org2.com
       - peer1.org2.com
     networks:
       - artstamper
+
