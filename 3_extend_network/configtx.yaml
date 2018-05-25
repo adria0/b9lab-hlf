@@ -20,14 +20,6 @@ Organizations:
             - Host: peer0.org2.com
               Port: 7051
 
-    - &Org3
-        Name: Org3
-        ID: Org3
-        MSPDir: crypto-config/peerOrganizations/org3.com/msp
-        AnchorPeers:
-            - Host: peer0.org3.com
-              Port: 7051
-
 Profiles:
     #  This blockchain is sometimes called a "system channel for the ordering service".
     ARTSTAMPEROrdererGenesis:
@@ -40,7 +32,6 @@ Profiles:
                 Organizations:
                     - *Org1
                     - *Org2
-                    - *Org3
 
     testchannel:
         Consortium: ARTSTAMPER
@@ -49,7 +40,6 @@ Profiles:
             Organizations:
                 - *Org1
                 - *Org2
-                - *Org3
 
 Orderer: &OrdererDefaults
     OrdererType: solo

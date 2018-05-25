@@ -7,6 +7,10 @@ cryptogen generate --config crypto-config.org3.yaml
 cp configtx.org3.yaml configtx.yaml
 configtxgen -printOrg Org3 > orderer/org3.json
 
+# restart docker
+docker-compose stop
+docker-compose start
+
 # read the current configuration, convert from Protocol Buffer to JSON, extract the configuration part
 docker exec cli.org1.com bash -c 'peer channel fetch config ./orderer/config_block.pb -o orderer.artstamper.com:7050 -c testchannel' 
 curl -X POST --data-binary @orderer/config_block.pb http://127.0.0.1:7059/protolator/decode/common.Block | jq . > orderer/config_block.json
@@ -31,6 +35,8 @@ curl -X POST --data-binary @orderer/config_update_in_envelope.json http://127.0.
 docker exec cli.org1.com bash -c 'peer channel signconfigtx -f ./orderer/config_update_in_envelope.pb'
 docker exec cli.org2.com bash -c 'peer channel update -o orderer.artstamper.com:7050 -c testchannel -f ./orderer/config_update_in_envelope.pb'
 
+exit
+
 # fetch the channel in the orderer and join all peers
 docker exec cli.org3.com bash -c 'peer channel fetch 0 mychannel.block -c testchannel -o orderer.artstamper.com:7050'
 docker exec cli.org3.com bash -c 'CORE_PEER_ADDRESS=peer0.org3.com:7051 peer channel join -b mychannel.block'
@@ -38,3 +44,11 @@ docker exec cli.org3.com bash -c 'CORE_PEER_ADDRESS=peer1.org3.com:7051 peer cha
 
 # install the chaincode in the new org
 docker exec cli.org3.com bash -c 'peer chaincode install -p catalog -n catalog -v 0'
+
+# quick test, call with org3, and get result with org1
+docker exec cli.org3.com bash -c "peer chaincode invoke -C testchannel -n catalog -v 0 -c '{\"Args\":[\"register\", \"ART1\", \"description1\", \"ipfs1\"]}'"
+docker exec cli.org1.com bash -c "peer chaincode query -C testchannel -n catalog -v 0 -c '{\"Args\":[\"query\",\"ART1\"]}'"  2> /dev/null
+
+
+
+
