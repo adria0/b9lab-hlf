@@ -1,3 +1,0 @@
-2018/03/30 18:28:03 [INFO] User provided config file: crypto-config/ordererOrganizations/artstamper.com/fabric-ca-client-config.yaml
-2018/03/30 18:28:03 [INFO] Configuration file location: /var/hyperledger/scripts/crypto-config/ordererOrganizations/artstamper.com/fabric-ca-client-config.yaml
-2018/03/30 18:28:03 [INFO] Stored CA root certificate at /var/hyperledger/scripts/crypto-config/ordererOrganizations/artstamper.com/msp/cacerts/localhost-17054.pem

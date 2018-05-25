@@ -1,3 +1,0 @@
-2018/03/30 18:28:15 [INFO] User provided config file: crypto-config/peerOrganizations/org1.com/fabric-ca-client-config.yaml
-2018/03/30 18:28:15 [INFO] Configuration file location: /var/hyperledger/scripts/crypto-config/peerOrganizations/org1.com/fabric-ca-client-config.yaml
-2018/03/30 18:28:15 [INFO] Stored CA root certificate at /var/hyperledger/scripts/crypto-config/peerOrganizations/org1.com/msp/cacerts/localhost-17056.pem

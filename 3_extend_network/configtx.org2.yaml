@@ -1,0 +1,62 @@
+Organizations:
+    - &OrdererOrg
+        Name: OrdererMSP
+        ID: OrdererMSP
+        MSPDir: crypto-config/ordererOrganizations/artstamper.com/msp
+
+    - &Org1
+        Name: Org1
+        ID: Org1
+        MSPDir: crypto-config/peerOrganizations/org1.com/msp
+        AnchorPeers:
+            - Host: peer0.org1.com
+              Port: 7051
+
+    - &Org2
+        Name: Org2
+        ID: Org2
+        MSPDir: crypto-config/peerOrganizations/org2.com/msp
+        AnchorPeers:
+            - Host: peer0.org2.com
+              Port: 7051
+
+Profiles:
+    #  This blockchain is sometimes called a "system channel for the ordering service".
+    ARTSTAMPEROrdererGenesis:
+        Orderer:
+            <<: *OrdererDefaults
+            Organizations:
+                - *OrdererOrg
+        Consortiums:
+            ARTSTAMPER:
+                Organizations:
+                    - *Org1
+                    - *Org2
+
+    testchannel:
+        Consortium: ARTSTAMPER
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *Org1
+                - *Org2
+
+Orderer: &OrdererDefaults
+    OrdererType: solo
+
+    Addresses:
+        - orderer.artstamper.com:7050
+
+    BatchTimeout: 2s
+
+    BatchSize:
+
+        MaxMessageCount: 10
+        AbsoluteMaxBytes: 99 MB
+        PreferredMaxBytes: 512 KB
+
+    Organizations:
+
+
+Application: &ApplicationDefaults
+    Organizations:
