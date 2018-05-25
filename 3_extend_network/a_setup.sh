@@ -20,5 +20,5 @@ configtxgen -profile testchannel -outputCreateChannelTx ./channels/testchannel.t
 configtxgen -profile testchannel -outputAnchorPeersUpdate ./channels/peerupdate_testchannel_org1.tx -channelID testchannel -asOrg Org1
 configtxgen -profile testchannel -outputAnchorPeersUpdate ./channels/peerupdate_testchannel_org2.tx -channelID testchannel -asOrg Org2
 
-
+docker-compose up
 
