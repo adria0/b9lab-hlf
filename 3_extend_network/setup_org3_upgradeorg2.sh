@@ -52,5 +52,3 @@ sleep 5
 docker exec cli.org1.com bash -c "peer chaincode query -C testchannel -n catalog -v 1 -c '{\"Args\":[\"query\",\"ARTX\"]}'"  2> /dev/null
 
 
-
-

@@ -1,0 +1,242 @@
+version: '2'
+
+networks:
+  artstamper:
+
+services:
+
+  # orderer service --------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------------------------------------------------
+
+  orderer.artstamper.com:
+    image: hyperledger/fabric-orderer:x86_64-1.0.0
+    container_name: orderer.artstamper.com
+    environment:
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      - ORDERER_GENERAL_LOGLEVEL=debug
+    volumes:    
+      - ./orderer/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+      - ./crypto-config/ordererOrganizations/artstamper.com/orderers/orderer.artstamper.com/msp:/var/hyperledger/orderer/msp
+    command: orderer
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    ports:
+      - 7050:7050
+    networks:
+      - artstamper
+
+  # organization 1, peers & client -----------------------------------------------------------------------------
+  # ------------------------------------------------------------------------------------------------------------
+
+  peer0.org1.com:
+    container_name: peer0.org1.com
+    extends:
+      file: ./peer.yaml
+      service: peer
+    environment:
+      - CORE_PEER_ID=peer0.org1.com
+      - CORE_PEER_ADDRESS=peer0.org1.com:7051
+      - CORE_PEER_LOCALMSPID=Org1
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.com:17051
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=db.peer0.org1.com:5984
+    volumes:
+      - ./crypto-config/peerOrganizations/org1.com/peers/peer0.org1.com/msp:/etc/hyperledger/msp/peer
+
+    ports:
+      - 17051:7051
+      - 17053:7053
+
+    depends_on:
+      - orderer.artstamper.com
+      - db.peer0.org1.com
+
+    networks:
+      - artstamper
+
+  db.peer0.org1.com:
+    container_name: db.peer0.org1.com
+    image: hyperledger/fabric-couchdb:x86_64-1.0.0
+    environment:
+      DB_URL: http://localhost:5984/
+    ports:
+      - "5984:5984"
+    networks:
+      - artstamper
+ 
+  peer1.org1.com:
+    container_name: peer1.org1.com
+    extends:
+      file: ./peer.yaml
+      service: peer
+    environment:
+      - CORE_PEER_ID=peer1.org1.com
+      - CORE_PEER_ADDRESS=peer1.org1.com:7051
+      - CORE_PEER_LOCALMSPID=Org1
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org1.com:7051
+
+    volumes:
+      - ./crypto-config/peerOrganizations/org1.com/peers/peer1.org1.com/msp:/etc/hyperledger/msp/peer
+
+    ports:
+      - 27051:7051
+      - 27053:7053
+    depends_on:
+      - orderer.artstamper.com
+    networks:
+      - artstamper
+
+  cli.org1.com:
+    extends:
+      file: ./cli.yaml
+      service: cli
+    container_name: cli.org1.com
+    environment:
+      - CORE_PEER_ID=cli.org1.com
+      - CORE_PEER_ADDRESS=peer0.org1.com:7051
+      - CORE_PEER_LOCALMSPID=Org1
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.com/msp
+    volumes:
+      - ./crypto-config/peerOrganizations/org1.com:/etc/hyperledger/msp
+    depends_on:
+      - orderer.artstamper.com
+      - peer0.org1.com
+      - peer1.org1.com
+    networks:
+      - artstamper
+
+  # organization 2, peers & client -----------------------------------------------------------------------------
+  # ------------------------------------------------------------------------------------------------------------
+
+  peer0.org2.com:
+    container_name: peer0.org2.com
+    extends:
+      file: ./peer.yaml
+      service: peer
+    environment:
+      - CORE_PEER_ID=peer0.org2.com
+      - CORE_PEER_ADDRESS=peer0.org2.com:7051
+      - CORE_PEER_LOCALMSPID=Org2
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org2.com:7051
+      
+    volumes:
+      - ./crypto-config/peerOrganizations/org2.com/peers/peer0.org2.com/msp:/etc/hyperledger/msp/peer
+    ports:
+      - 37051:7051
+      - 37053:7053
+    depends_on:
+      - orderer.artstamper.com
+    networks:
+      - artstamper
+
+  peer1.org2.com:
+    container_name: peer1.org2.com
+    extends:
+      file: ./peer.yaml
+      service: peer
+    environment:
+      - CORE_PEER_ID=peer1.org2.com
+      - CORE_PEER_ADDRESS=peer1.org2.com:7051
+      - CORE_PEER_LOCALMSPID=Org2
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org2.com:7051
+      
+    volumes:
+      - ./crypto-config/peerOrganizations/org2.com/peers/peer1.org2.com/msp:/etc/hyperledger/msp/peer
+    ports:
+      - 47051:7051
+      - 47053:7053
+    depends_on:
+      - orderer.artstamper.com
+    networks:
+      - artstamper
+
+  cli.org2.com:
+    extends:
+      file: ./cli.yaml
+      service: cli
+    container_name: cli.org2.com
+    environment:
+      - CORE_PEER_ID=cli.org2.com
+      - CORE_PEER_ADDRESS=peer0.org2.com:7051
+      - CORE_PEER_LOCALMSPID=Org2
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org2.com/msp
+    volumes:
+      - ./crypto-config/peerOrganizations/org2.com:/etc/hyperledger/msp
+    depends_on:
+      - orderer.artstamper.com
+      - peer0.org2.com
+      - peer1.org2.com
+    networks:
+      - artstamper
+
+  # organization 3, peers & client -----------------------------------------------------------------------------
+  # ------------------------------------------------------------------------------------------------------------
+
+  peer0.org3.com:
+    container_name: peer0.org3.com
+    extends:
+      file: ./peer.yaml
+      service: peer
+    environment:
+      - CORE_PEER_ID=peer0.org3.com
+      - CORE_PEER_ADDRESS=peer0.org3.com:7051
+      - CORE_PEER_LOCALMSPID=Org3
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org3.com:7051
+      
+    volumes:
+      - ./crypto-config/peerOrganizations/org3.com/peers/peer0.org3.com/msp:/etc/hyperledger/msp/peer
+    ports:
+      - 57051:7051
+      - 57053:7053
+    depends_on:
+      - orderer.artstamper.com
+    networks:
+      - artstamper
+
+  peer1.org3.com:
+    container_name: peer1.org3.com
+    extends:
+      file: ./peer.yaml
+      service: peer
+    environment:
+      - CORE_PEER_ID=peer1.org3.com
+      - CORE_PEER_ADDRESS=peer1.org3.com:7051
+      - CORE_PEER_LOCALMSPID=Org3
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org3.com:7051
+      
+    volumes:
+      - ./crypto-config/peerOrganizations/org3.com/peers/peer1.org3.com/msp:/etc/hyperledger/msp/peer
+    ports:
+      - 58051:7051
+      - 58053:7053
+    depends_on:
+      - orderer.artstamper.com
+    networks:
+      - artstamper
+
+  cli.org3.com:
+    extends:
+      file: ./cli.yaml
+      service: cli
+    container_name: cli.org3.com
+    environment:
+      - CORE_PEER_ID=cli.org3.com
+      - CORE_PEER_ADDRESS=peer0.org3.com:7051
+      - CORE_PEER_LOCALMSPID=Org3
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org3.com/msp
+    volumes:
+      - ./crypto-config/peerOrganizations/org3.com:/etc/hyperledger/msp
+    depends_on:
+      - orderer.artstamper.com
+    networks:
+      - artstamper
+

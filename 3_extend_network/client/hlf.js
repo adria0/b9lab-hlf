@@ -3,15 +3,15 @@ const hfc = require('fabric-client');
 const client = new hfc();
 
 async function init(options) {
-  
+
     const wallet = await hfc.newDefaultKeyValueStore({ path: options.wallet_path })
     client.setStateStore(wallet);
-  
+
     const user = await client.getUserContext(options.user_id, true);
-   
+
     if(typeof user === "undefined" || !user.isEnrolled())
        throw "User not enrolled";
-    
+
     let channel
     try {
       channel = client.newChannel(options.channel_id);
@@ -21,14 +21,14 @@ async function init(options) {
     } catch(e) { // channel already exists
       channel = client.getChannel(options.channel_id);
     }
-  
+
     return channel
   }
-  
+
 exports.sendTransaction= async function (options, func, args) {
-     
+
     const channel = await init(options)
-  
+
     const proposal = {
         targets: null,
         chaincodeId: options.chaincode_id,
@@ -37,7 +37,7 @@ exports.sendTransaction= async function (options, func, args) {
         chainId: options.channel_id,
         txId: client.newTransactionID()
     };
-    
+
     const responses =  await channel.sendTransactionProposal(proposal);
     const response = responses[0] // proposalresponse
     if (!response
@@ -52,13 +52,13 @@ exports.sendTransaction= async function (options, func, args) {
        proposal: responses[1],
        header: responses[2]
     };
-  
+
     return await channel.sendTransaction(transaction);
 
 };
 
 exports.query = async function (options, func, args) {
-     
+
  const channel = await init(options)
 
  const request = {
