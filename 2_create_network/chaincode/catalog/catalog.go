@@ -72,7 +72,8 @@ func (c *Catalog) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 // getCreatorID returns the identifier of the current creator (sender of te TX)
 //   we manage the hash of the entry. Of course this could be done better,
 //   retrievient the public key of the certificate of the client, and then
-//   hashing it
+//   hashing it (this is known in PKI as "subjectKeyIdentifier" and supports
+//   re-certification )
 func (c *Catalog) getCreatorID(stub shim.ChaincodeStubInterface) (string, error) {
 
 	creator, err := stub.GetCreator()
