@@ -6,17 +6,29 @@ networks:
 services:
 
   # orderer service --------------------------------------------------------------------------------------------
+  #
+  # The OS creates new blocks by ordering the transactions. It provides a shared communication channel to
+  # clients and peers.
+  #
+  # The "solo" orderer is used (see configtx.yaml)
+  #
   # ------------------------------------------------------------------------------------------------------------
 
   orderer.artstamper.com:
     image: hyperledger/fabric-orderer:x86_64-1.0.0
     container_name: orderer.artstamper.com
     environment:
+      # host IPs service binding
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      
+      # where to find the genesys block
       - ORDERER_GENERAL_GENESISMETHOD=file
       - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
+      
+      # which Membership Service Provider to use 
       - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
       - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+
       # enabled TLS
       - ORDERER_GENERAL_TLS_ENABLED=true
       - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
@@ -34,6 +46,12 @@ services:
       - artstamper
 
   # organization 1, peers & client -----------------------------------------------------------------------------
+  #
+  # This organizaton has 
+  #
+  #   - two peers, one of them connected to a database
+  #   - one client to access to the peers
+  #
   # ------------------------------------------------------------------------------------------------------------
 
   peer0.org1.com:
@@ -42,17 +60,26 @@ services:
       file: ./peer.yaml
       service: peer
     environment:
+
+      # the ID of this peer
       - CORE_PEER_ID=peer0.org1.com
+      
+      # bind the peer to this addres:port
       - CORE_PEER_ADDRESS=peer0.org1.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.com:7051
+      
+      # which membership provider to use
       - CORE_PEER_LOCALMSPID=Org1
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.com:17051
-      # - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      # - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=db.peer0.org1.com:5984
-      # enabled TLS
-      - CORE_LOGGING_LEVEL=DEBUG
+
+      # the database for this peer ia chouldDB 
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=db.peer0.org1.com:5984
+
+      # enabled TLS, the CHAINCODELISTENADDRESS is requiered when using TLS
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_CHAINCODELISTENADDRESS=peer0.org1.com:7052
+
     volumes:
       - ./crypto-config/peerOrganizations/org1.com/peers/peer0.org1.com/msp:/etc/hyperledger/msp/peer
       - ./crypto-config/peerOrganizations/org1.com/peers/peer0.org1.com/tls:/etc/hyperledger/fabric/tls
@@ -111,10 +138,17 @@ services:
       service: cli
     container_name: cli.org1.com
     environment:
+      # is of this client 
       - CORE_PEER_ID=cli.org1.com
+
+      # what peer to connect, could be peer0 or peer1 
       - CORE_PEER_ADDRESS=peer0.org1.com:7051
+
+      # what membership provider to use, in this case the administration org1 is ok
       - CORE_PEER_LOCALMSPID=Org1
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.com/msp
+ 
+      # enabled TLS
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/peers/peer0.org1.com/msp/cacerts/ca.org1.com-cert.pem
       - CORE_PEER_CHAINCODELISTENADDRESS=peer0.org1.com:7052
@@ -128,7 +162,13 @@ services:
     networks:
       - artstamper
 
-  # organization 2, peers & client -----------------------------------------------------------------------------
+  # organization 1, peers & client -----------------------------------------------------------------------------
+  #
+  # This organizaton has 
+  #
+  #   - two peers
+  #   - one client to access to the peers
+  #
   # ------------------------------------------------------------------------------------------------------------
 
   peer0.org2.com:
@@ -137,7 +177,8 @@ services:
       file: ./peer.yaml
       service: peer
     environment:
-      - CORE_PEER_ID=peer0.org2.com
+        - CORE_PEER_ID=peer0.org2.comw:
+
       - CORE_PEER_ADDRESS=peer0.org2.com:7051
       - CORE_PEER_LOCALMSPID=Org2
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
@@ -193,6 +234,7 @@ services:
       - CORE_PEER_ADDRESS=peer0.org2.com:7051
       - CORE_PEER_LOCALMSPID=Org2
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org2.com/msp
+      # enabled TLS
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/peers/peer0.org2.com/msp/cacerts/ca.org2.com-cert.pem
     volumes:
@@ -204,3 +246,4 @@ services:
       - peer1.org2.com
     networks:
       - artstamper
+

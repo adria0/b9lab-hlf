@@ -57,6 +57,9 @@ _Think about Peers, CA, Channels and Smart Contracts. Make a critical analysis. 
 
 A nice design for an hyperledger art market could be: 
 
+- CAs
+  - The certification authorities used should be from CAs issuing qualified certificates,
+    eIDAS-certified or an equivalent level of trust acting as a trusted three party.
 - Network & peers
   - Create a PoR (proof of reputation, like PoA.network) network among reputated certificate of
     authenticity issuers.
