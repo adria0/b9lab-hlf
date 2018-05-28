@@ -2,21 +2,21 @@
 
 ## Native hosts
 
-_You could run the nodes native on hosts. Why is this impractical?_
+_You could run the nodes native in hosts. Why is this impractical?_
 
 I see three reasons here:
 
 - Docker provides a very good level of isolation, reduces the
-  maintainance cloned nodes using a common configuration, makes
+  maintenance of cloned nodes using a common configuration, makes
   the updating process easy, helps to automatize all devops.
 
 - Hyperledger itself provides the distribution with docker images
-  that helps to upgrade the clients from an unified and trusted
+  that helps to upgrade the clients from a unified and trusted
   source.
 
 - It helps to install in the same host more than 1 service ; in 
   some cases, when joining different blockchain networks, could be
-  usefull to run in the same host nodes from those networks (if the
+  useful to run in the same host nodes from those networks (if the
   workload is not too heavy)
 
 ## Kubernetes & Docker Swarm
@@ -24,19 +24,19 @@ I see three reasons here:
 _You could use various services, e.g. Docker Swarm or Kubernetes.
 Explain briefly Swarm and Kubernetes. Name some sources for the next steps to use them for Hyperledger Fabric._
 
-*Docker swarm* allows to create clusters with docker from a primary
+*Docker swarm* allows creating clusters with docker from a primary
 docker service. Mainly creates multiple replicas of this instance,
 and distributes the workload among those instances, providing load
 balancing, autoscaling, as also running the same command into multiple
 containers at the same time.
 
-The main idea behind *Kubernetes* is allow large and safe service
+The main idea behind *Kubernetes* is allowing large and safe service
 deployments by grouping containers in "pods".
 When scaling happens that usually needs to scale, not only one 
 component, but a set of co-located components 
 (database, monitor, worker nodes,...)
 and the pod can be understood as a set of this "cooperating" 
-containers as an scaling unit. Kubernetes
+containers as a scaling unit. Kubernetes
 allows to manage these "pods" in a way that allows the cluster/
 autoscaling/failsafe capabilities expected from large deployments
 using a well-defined scalable architecture.
@@ -71,17 +71,16 @@ where one can learn more about it, as well how to get support_
 Hyperledger cello is a tool to deploy blockchains over a pool of virtual server
 hosts. It has a simple user interface with role-based dashboards:
 
-- operator dashboard  allowssystem operators to add/remove
+- operator dashboard  allows system operators to add/remove
 virtualization hosts (hosts that can run containers, like docker), add/remove
 blockchains (specifying the number of nodes, and the orderer type), visualizing
 the global system status, as user management.
 
-- the user dashboard (for each chain) allows users to see blocks and tansactions,
-  install, initiailize query and invoke chaincodes 
+- the user dashboard (for each chain) allows users to see blocks and transactions,
+  install, initialize query and invoke chaincodes 
 
 A very good way to quickly see how it works is in the video
 https://www.youtube.com/watch?v=4-pWlj8UgRg also the tutorial
-helps understanding the functionality https://github.com/hyperledger/cello/blob/master/docs/tutorial.md
+helps to understand the functionality https://github.com/hyperledger/cello/blob/master/docs/tutorial.md
 
 To get support, there's the https://chat.hyperledger.org/channel/cello chat
-
