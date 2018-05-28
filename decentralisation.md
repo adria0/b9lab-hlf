@@ -10,14 +10,14 @@ I see three reasons here:
   maintenance of cloned nodes using a common configuration, makes
   the updating process easy, helps to automatize all devops.
 
-- Hyperledger itself provides the distribution with docker images
+- Hyperledger itself provides a secure distribution with docker images
   that helps to upgrade the clients from a unified and trusted
   source.
 
 - It helps to install in the same host more than 1 service ; in 
   some cases, when joining different blockchain networks, could be
-  useful to run in the same host nodes from those networks (if the
-  workload is not too heavy)
+  useful to run in the same host, nodes from those networks or additional
+  services (if the workload is not too heavy)
 
 ## Kubernetes & Docker Swarm
 
@@ -32,7 +32,7 @@ containers at the same time.
 
 The main idea behind *Kubernetes* is allowing large and safe service
 deployments by grouping containers in "pods".
-When scaling happens that usually needs to scale, not only one 
+When scaling, happens that usually needs to scale, not only one 
 component, but a set of co-located components 
 (database, monitor, worker nodes,...)
 and the pod can be understood as a set of this "cooperating" 
@@ -57,11 +57,15 @@ Sources about deploying fabric with swarm
 
 _You can use IBM Cloud. Tell us what it offers in regard to Hyperledger Fabric._
 
-The most important feature in the IBM cloud is that is possible to manage the configuration
-and the hosts using an user interface and in a very controlled environment. Is not 
-clear how to archive decentralization if all hosts are in the same provider, but, at least
-private keys are well stored in a hardware security module.
+IBM Cloud offers HyperLedger fabric in SaaS mode (or BaaS, blockchain as a service) with some
+clear advantages:
 
+- is possible to manage the configuration and the hosts using an user interface
+- running blockchains can be used as a service, paying for its usage instead of having dedicated
+nodes for that. 
+- everything is deployed in the IBM infraestructure, providing the programmable automation,
+  monitorization and scaling that is currently available in this cloud.
+- private keys are well stored in a hardware security module that is a expensive hardware
 
 ## Hyperledger cello
 
@@ -77,7 +81,7 @@ blockchains (specifying the number of nodes, and the orderer type), visualizing
 the global system status, as user management.
 
 - the user dashboard (for each chain) allows users to see blocks and transactions,
-  install, initialize query and invoke chaincodes 
+  install, initializem, query and invoke chaincodes 
 
 A very good way to quickly see how it works is in the video
 https://www.youtube.com/watch?v=4-pWlj8UgRg also the tutorial
