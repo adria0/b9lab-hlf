@@ -78,5 +78,6 @@ A nice design for an hyperledger art market could be:
   - As a proof of authenticity, an ultra-resolution microphotography of a part of the art piece is done.
     In the art asset is stored the IPFS multihash of this scan, and can be public available
     or not.
-  - Assets are transferred via HyperLedger Zero-Knowledge Asset Transfer mechanism
+  - Assets are transferred via HyperLedger Zero-Knowledge Asset Transfer mechanism (see https://www.ibm.com/developerworks/cloud/library/cl-blockchain-private-confidential-transactions-hyperledger-fabric-zero-knowledge-proof/index.html)
+
 
